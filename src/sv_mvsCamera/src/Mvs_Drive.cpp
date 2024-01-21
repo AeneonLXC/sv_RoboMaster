@@ -227,18 +227,22 @@ void Mvs_Drive::MVS_Starting_Imshow(void* handle, int nRet, unsigned char *pData
                     printf("MV_CC_ConvertPixelType fail! nRet [%x]\n", nRet);
                     break;
                 }
+
                 image = cv::Mat(cv::Size(stImageInfo.nWidth, stImageInfo.nHeight), CV_8UC3, pDataForRGB); 
                 cv::cvtColor(image, frame, cv::COLOR_RGB2BGR); 
                 hsvImage = image_p.Image_HsvImage(image, hsvImage);
                 // 查找轮廓并返回结果  
                 std::vector<std::vector<cv::Point>> contours = image_p.Image_FindContours(hsvImage);  
+                std::vector<std::vector<cv::Point>> allArmours = image_p.Image_GetContours(contours, image_p); 
+                std::vector<std::vector<cv::Point>> allArmours_Finall = image_p.Image_SelectArmour(allArmours);
+
+                for (const auto& armour : allArmours_Finall){
+                    for(int i=0; i < 4; i++){
+                        cv::line(frame, cv::Point(armour[i].x, armour[i].y), cv::Point(armour[(i+1) % 4].x, armour[(i+1) % 4].y), (0, 0, 255), 3);
+                    }
+                    cv::circle(frame, cv::Point(armour[0].x, armour[0].y), (255, 255, 0), -1, 5);
+                }
                 
-                // 遍历轮廓并绘制边界框  
-                for (const auto& contour : contours) {  
-                    cv::Rect boundingBox = cv::boundingRect(contour);  
-                    cv::rectangle(frame, boundingBox, (0, 1, 0), 2);  
-                    printf("%d\n", boundingBox.x);
-                }  
                 cv::imshow("frame", frame);
                 cv::imshow("hsvImage", hsvImage);
                 // 按下ESC键退出循环
