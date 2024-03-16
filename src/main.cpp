@@ -3,6 +3,8 @@
 #include "Mvs_Drive.hpp"
 #include "UsbCamera_Drive.hpp"
 
+#include "serial.h"
+
 #define DEBUG_CAMERA 1 //用于debug 0 代表使用USB相机; 1 代表使用工业相机
 using namespace std;
 

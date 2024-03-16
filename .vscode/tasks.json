@@ -8,7 +8,8 @@
                 "-std=c++11",
                 "-g",
                 //"${file}",   /* 编译单个文件 */
-                "${fileDirname}/*.cpp",  /* 编译多个文件 */
+                "${fileDirname}/main.cpp",  /* 编译多个文件 */
+                //"${fileDirname}/*.cpp",  /* 编译多个文件 */
                 "-o",
                 "${fileDirname}/${fileBasenameNoExtension}",  /* 输出文件路径 */
                 // "${fileDirname}/${fileBasenameNoExtension}.exe",  /* 输出文件路径 */
@@ -18,17 +19,15 @@
                 "-I","/usr/local/include/",
                 "-I","/usr/local/include/opencv4/",
                 "-I","/usr/local/include/opencv4/opencv2",
-                
-                // torch所需头文件路径
-                "-I","/usr/local/libtorch",
-                "-I","/usr/local/libtorch/include",
-                // "-I","/usr/local/libtorch/include/torch/csrc/api/include",
-                "-L","/usr/local/libtorch/lib",
-                "/usr/local/libtorch/lib/lib*",
 
                 /* OpenCV的lib库 */
                 "-L", "/usr/local/lib",
-                "/usr/local/lib/libopencv_*",
+                //"/usr/local/lib/libopencv_*",
+                "/usr/local/lib/libopencv_highgui.so",
+                "/usr/local/lib/libopencv_imgcodecs.so",
+                "/usr/local/lib/libopencv_ml.so",
+                "/usr/local/lib/libopencv_core.so",
+                "/usr/local/lib/libopencv_video.so",       
 
                 /* 项目所需的库文件路径 */
                 "-L", "/usr/local/lib",
@@ -41,25 +40,49 @@
 
                 // Mvs工业相机自定义驱动库文件路径
                 "-I","${workspaceFolder}/src/sv_mvsCamera/include/",
-                "-g","${workspaceFolder}/src/sv_mvsCamera/src/*.cpp",// -g 编译这个文件下的所有的cpp文件，如果文件是undefine referencce to 就需要使用-g来编译所有的cpp
+                "-g","${workspaceFolder}/src/sv_mvsCamera/src/Mvs_Drive.cpp",// -g 编译这个文件下的所有的cpp文件，如果文件是undefine referencce to 就需要使用-g来编译所有的cpp
 
                 /* 海康Vision的lib库 */
+                //"${workspaceFolder}/src/sv_mvsCamera/lib/64/*",
                 "-L","${workspaceFolder}/src/sv_mvsCamera/lib/64",
-                "${workspaceFolder}/src/sv_mvsCamera/lib/64/*",
+                "${workspaceFolder}/src/sv_mvsCamera/lib/64/libFormatConversion.so",
+                "${workspaceFolder}/src/sv_mvsCamera/lib/64/libLog_gcc421_v3_0.so",
+                "${workspaceFolder}/src/sv_mvsCamera/lib/64/libMvCameraControl.so.3.1.3.0",
+                "${workspaceFolder}/src/sv_mvsCamera/lib/64/libMvUsb3vTL.so",
+                "${workspaceFolder}/src/sv_mvsCamera/lib/64/libGCBase_gcc421_v3_0.so",
+                "${workspaceFolder}/src/sv_mvsCamera/lib/64/libMathParser_gcc421_v3_0.so",
+                "${workspaceFolder}/src/sv_mvsCamera/lib/64/libMVGigEVisionSDK.so",
+                "${workspaceFolder}/src/sv_mvsCamera/lib/64/libMvUsb3vTL.so.3.1.3.0",
+                "${workspaceFolder}/src/sv_mvsCamera/lib/64/libGenApi_gcc421_v3_0.so",
+                "${workspaceFolder}/src/sv_mvsCamera/lib/64/libMediaProcess.so",
+                "${workspaceFolder}/src/sv_mvsCamera/lib/64/libMVGigEVisionSDK.so.3.1.3.0",
+                "${workspaceFolder}/src/sv_mvsCamera/lib/64/libNodeMapData_gcc421_v3_0.so",
+                "${workspaceFolder}/src/sv_mvsCamera/lib/64/liblog4cpp_gcc421_v3_0.so",
+                "${workspaceFolder}/src/sv_mvsCamera/lib/64/libMvCameraControl.so",
+                "${workspaceFolder}/src/sv_mvsCamera/lib/64/libMVRender.so",
+                "${workspaceFolder}/src/sv_mvsCamera/lib/64/libXmlParser_gcc421_v3_0.so",
                 
                 // USB相机自定义驱动库文件路径
                 "-I","${workspaceFolder}/src/sv_usbCamera/include/",
-                "-g","${workspaceFolder}/src/sv_usbCamera/src/*.cpp",
+                "-g","${workspaceFolder}/src/sv_usbCamera/src/UsbCamera_Drive.cpp",
                 
                 // 图像处理程序库文件路径
                 "-I","${workspaceFolder}/src/sv_imageProcess/include/",
-                "-g","${workspaceFolder}/src/sv_imageProcess/src/*.cpp",
-                
+                "-g","${workspaceFolder}/src/sv_imageProcess/src/Image_Process.cpp",
+               
+                //串口通信程序库文件路径
+                "-I", "/tmp/usr/local/include/serial/",
+                "-I","${workspaceFolder}/src/sv_serious/include/",
+                "-g","${workspaceFolder}/src/sv_serious/src/Serial_UL.cpp",
+                "-L", "/tmp/usr/local/lib",
+                "/tmp/usr/local/lib/libserial.so",
 
                 "-lopencv_core",
                 "-lopencv_highgui",
                 "-lopencv_imgproc",
                 "-lopencv_videoio",
+                "-lopencv_ml",
+                "-lopencv_imgcodecs",
         
             ],
             "options": {

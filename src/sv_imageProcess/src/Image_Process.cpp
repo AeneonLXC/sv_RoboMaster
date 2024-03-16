@@ -1,5 +1,9 @@
 #include "Image_Process.hpp"
+#include "Serial_UL.hpp"
 
+Serial_UL serUL_Image;
+
+cv::Ptr<cv::ml::SVM> svm = cv::ml::StatModel::load<cv::ml::SVM>("svm_data_red.yml");
 // 创建HSV图像容器
 cv::Mat Image_Process::Image_HsvImage(cv::Mat frame, cv::Mat hsvImage){
         // 将BGR图像转换为HSV图像
@@ -20,10 +24,11 @@ cv::Mat Image_Process::Image_HsvImage(cv::Mat frame, cv::Mat hsvImage){
     return binaryImage;
 }
 
+// 查找轮廓
 std::vector<std::vector<cv::Point>> Image_Process::Image_FindContours(cv::Mat binaryImage){
     std::vector<std::vector<cv::Point>> contours;  
     std::vector<cv::Vec4i> hierarchy;  
-    // 查找轮廓  
+      
     cv::findContours(binaryImage, contours, hierarchy, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);  
     return contours;  
 
@@ -104,27 +109,30 @@ std::vector<cv::Point> Image_Process::Image_GetArmour(cv::Point rect_center_poin
 }    
 
 std::vector<cv::Point> Image_Process::Image_Armour(cv::Point armour_s0, cv::Point armour_s1, cv::Point armour_s2, cv::Point armour_s3, cv::Point armour_center, cv::Point armour_wh) {  
-    // 创建装甲板 包含装甲板的中心点坐标 宽、高、旋转角度  
+    // 创建装甲板 包含装甲板的中心点坐标 宽、高、旋转角度、数字
 
     std::vector<cv::Point> armour_new;  
-
+    cv::Point armour_num;
+    armour_num.x = 0;//默认装甲板数字为0
     armour_new.push_back(armour_s0);
     armour_new.push_back(armour_s1);
     armour_new.push_back(armour_s2);
     armour_new.push_back(armour_s3);
     armour_new.push_back(armour_center);
     armour_new.push_back(armour_wh);
+    armour_new.push_back(armour_num);
 
     return armour_new;  
 
 }    
 
-std::vector<std::vector<cv::Point>> Image_Process::Image_SelectArmour(std::vector<std::vector<cv::Point>> armours){  
+std::vector<std::vector<cv::Point>> Image_Process::Image_SelectArmour(std::vector<std::vector<cv::Point>> armours, cv::Mat frame){  
     std::vector<std::vector<cv::Point>> frist_armours; // 存储第一次筛选过armours的集合  
     std::vector<std::vector<cv::Point>> second_armours; // 存储第二次筛选过armours的集合  
     std::vector<cv::Point> armour_new;  // 存储筛选的装甲板的集合
     cv::Point armour_s0, armour_s1, armour_s2, armour_s3, armour_center, armour_wh, armour_area_angle;
-     
+    
+    cv::Mat gray, img;
     //第一次筛选装甲板
     // 判断allArmours集合的数量是否大于0 
     if (armours.size() > 0) {  
@@ -170,8 +178,35 @@ std::vector<std::vector<cv::Point>> Image_Process::Image_SelectArmour(std::vecto
                 armour_wh.y = std::sqrt(std::pow((frist_armours[_][3].x - frist_armours[_][0].x), 2) + std::pow((frist_armours[_][3].y - frist_armours[_][0].y),2 )); //装甲板的高
 
                 armour_new = Image_Process::Image_Armour(armour_s0, armour_s1, armour_s2, armour_s3, armour_center, armour_wh);
-                // 
-                if((std::abs(frist_armours[_][6].y - frist_armours[i][6].y) < 45.) && (armour_wh.x * armour_wh.y > 3000 && armour_wh.x * armour_wh.y < 8000)){
+                
+                // SVM
+                float result = 4.0;
+                if (armour_s0.x >0 && armour_s0.y >0 && armour_wh.x >0 && armour_wh.y >0 && armour_s0.x + armour_wh.x  < frame.cols && armour_s0.y  + armour_wh.y < frame.rows)
+                {
+                    cv::Rect roi(armour_s0.x, armour_s0.y, armour_wh.x, armour_wh.y);
+                    cv::Mat roiImage = frame(roi);
+                    
+                    cv::cvtColor(roiImage, gray, cv::COLOR_BGR2GRAY);
+                    cv::resize(gray, gray, cv::Size(224, 112));
+                    img = gray.reshape(1, 1);
+                    img.convertTo(img, CV_32F);
+                    result = svm->predict(img);
+                    printf("%f\n", result);
+
+                    //串口测试
+                    if (serUL_Image.flag == 0)
+                    {
+                        serUL_Image.Serial_init();
+                        serUL_Image.Serial_Open();
+                        serUL_Image.flag = 1;
+                    }
+                    
+                    char array[1000] = {4,5,6,7};
+                    serUL_Image.Serial_Write(array);
+                    
+                }
+ 
+                if((std::abs(frist_armours[_][6].y - frist_armours[i][6].y) < 45.) && (armour_wh.x * armour_wh.y > 3000 && armour_wh.x * armour_wh.y < 8000) && (result != 2.0)){
                     second_armours.push_back(armour_new);
                 } 
             }
@@ -183,3 +218,14 @@ std::vector<std::vector<cv::Point>> Image_Process::Image_SelectArmour(std::vecto
     
     return second_armours; 
 } 
+
+// 提取ROI
+cv::Mat Image_Process::Image_GetImageROI(cv::Mat frame, cv::Point point_xy, cv::Point point_wh){
+
+    // cv::Rect roi(100, 100, 200, 200); // 从(100, 100)开始，宽度和高度都为200的矩形区域  
+
+    cv::Rect roi(point_xy.x, point_xy.y, point_wh.x, point_wh.y);
+    cv::Mat roiImage = frame(roi); 
+
+    return roiImage;
+}

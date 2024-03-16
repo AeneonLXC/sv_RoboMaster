@@ -8,12 +8,14 @@
                 "/usr/local/libtorch",
                 "/usr/local/libtorch/include",
                 "/usr/local/libtorch/include/torch/csrc/api/include",
-                "${workspaceFolder}/src/sv_mvsCamera/include", //Mvs include path
-                "${workspaceFolder}/src/sv_usbCamera/include", //Usb include path
-                "${workspaceFolder}/src/sv_armour/include", //Armour include path
-                "${workspaceFolder}/src/sv_angleSolve/include", //AngleSolve include path
-                "${workspaceFolder}/src/sv_decision/include", //Decision include path
-                "${workspaceFolder}/src/sv_imageProcess/include" //ImageProcess include path
+                "/tmp/usr/local/include/serial",
+                "${workspaceFolder}/src/sv_mvsCamera/include",
+                "${workspaceFolder}/src/sv_usbCamera/include",
+                "${workspaceFolder}/src/sv_armour/include",
+                "${workspaceFolder}/src/sv_angleSolve/include",
+                "${workspaceFolder}/src/sv_decision/include",
+                "${workspaceFolder}/src/sv_imageProcess/include",
+                "/tmp/usr/local/include"
             ],
             "defines": [],
             "compilerPath": "/usr/bin/gcc",
